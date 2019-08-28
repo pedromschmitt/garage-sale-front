@@ -29,6 +29,48 @@
 
 <script>
 export default {
-  
+  name: 'Signup',
+  data () {
+    return {
+      email: '',
+      password: '',
+      password_confirmation: '',
+      error: ''
+    }
+  },
+  created () {
+    this.checkedSignedIn()
+  },
+  updated () {
+    this.checkedSignedIn()
+  },
+  methods: {
+    signup () {
+      this.$http.plain.post('/singup', { emais: this.email, password: this.password, password_confirmation: this.password_confirmation })
+        .then(response => this.signupSuccessful(response))
+        .catch(error => this.signupFailed(error))
+    },
+    signupSuccessful (response) {
+      if (!response.data.csrf) {
+        this.signupFailed(response)
+        return
+      }
+
+      localStorage.csrf = response.data.csrf
+      localStorage.signedIn = true
+      this.error = ''
+      this.$router.replace('/items')
+    },
+    signupFailed (error) {
+      this.error = (error.response && error.response.data && error.response.data.error) || 'Something went wrong'
+      delete localStorage.csrf
+      delete localStorage.signedIn
+    },
+    checkedSignedIn () {
+      if (localStorage.signedIn) {
+        this.$router.replace('/items')
+      }
+    }
+  }
 }
 </script>
